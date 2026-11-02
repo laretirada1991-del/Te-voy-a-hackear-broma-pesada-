@@ -1,0 +1,447 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚠️ ADVERTENCIA DE SEGURIDAD ⚠️</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Share Tech Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #050505;
+            color: #00ff66;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Scanline Overlay Effect */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 3px, 6px 100%;
+            z-index: 40;
+        }
+
+        /* CRT Screen Flicker */
+        @keyframes crtFlicker {
+            0% { opacity: 0.97; }
+            50% { opacity: 1; }
+            100% { opacity: 0.98; }
+        }
+        .crt {
+            animation: crtFlicker 0.15s infinite;
+        }
+
+        /* Neon Glows */
+        .glow-red {
+            text-shadow: 0 0 8px #ff0055, 0 0 20px #ff0055, 0 0 30px #ff0055;
+        }
+        .glow-green {
+            text-shadow: 0 0 8px #00ff66, 0 0 20px #00ff66, 0 0 30px #00ff66;
+        }
+        .box-glow-red {
+            box-shadow: 0 0 15px rgba(255, 0, 85, 0.5), inset 0 0 15px rgba(255, 0, 85, 0.3);
+        }
+        .box-glow-green {
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.4), inset 0 0 15px rgba(0, 255, 102, 0.2);
+        }
+
+        /* Matrix Canvas Background */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+            transition: opacity 1s ease;
+        }
+
+        /* Custom Scrollbar for Terminal */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020b05;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00ff66;
+            border-radius: 3px;
+        }
+
+        /* Glitch Animation */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        .glitch-hover:hover {
+            animation: glitch 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+        }
+    </style>
+</head>
+<body class="crt min-h-screen flex flex-col justify-between relative overflow-hidden bg-black text-green-500">
+
+    <!-- Scanlines Effect -->
+    <div class="scanlines"></div>
+
+    <!-- Matrix Rain Canvas -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <!-- Header status bar -->
+    <header class="relative z-10 w-full p-3 border-b border-green-500/30 bg-black/80 flex justify-between items-center text-xs md:text-sm">
+        <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping"></span>
+            <span class="text-red-500 font-bold tracking-widest uppercase" id="status-tag">SISTEMA COMPROMETIDO</span>
+        </div>
+        <div class="text-green-400/70 hidden sm:block">
+            IP: <span id="fake-ip">192.168.1.104</span> | PUERTO: 8080
+        </div>
+        <button id="sound-toggle" class="text-xs px-2 py-1 border border-green-500/50 rounded hover:bg-green-500/20 text-green-400 transition">
+            <i class="fas fa-volume-up mr-1"></i> SONIDO: <span id="sound-state">ON</span>
+        </button>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="relative z-10 container mx-auto px-4 py-6 flex-grow flex items-center justify-center">
+
+        <!-- ================= PANTALLA 1: ADVERTENCIA INICIAL ================= -->
+        <div id="screen-warning" class="w-full max-w-xl bg-black/90 border-2 border-red-500/80 rounded-xl p-6 md:p-8 text-center box-glow-red transition-all duration-500">
+            <div class="text-5xl md:text-6xl mb-4 text-red-500 animate-bounce">
+                <i class="fas fa-biohazard"></i>
+            </div>
+            
+            <h1 class="text-2xl md:text-4xl font-extrabold text-red-500 glow-red tracking-wider mb-2">
+                ⚠️ ADVERTENCIA DE SEGURIDAD ⚠️
+            </h1>
+            
+            <p class="text-lg md:text-2xl text-red-400 font-bold mb-6 italic tracking-wide">
+                "te voy a hackear, no entres"
+            </p>
+
+            <div class="text-sm md:text-base text-gray-300 bg-red-950/40 p-4 rounded-lg border border-red-500/30 mb-8 text-left space-y-2">
+                <p class="flex items-center gap-2 text-red-400 font-bold">
+                    <i class="fas fa-exclamation-triangle"></i> RIESGO CRÍTICO DETECTADO:
+                </p>
+                <ul class="list-disc list-inside space-y-1 text-gray-400 text-xs md:text-sm">
+                    <li>Extracción inminente de fotos secretas de perritos.</li>
+                    <li>Sincronización forzada del historial de navegación.</li>
+                    <li>Acceso al nivel de miedo del dispositivo.</li>
+                </ul>
+            </div>
+
+            <button id="btn-start" class="glitch-hover w-full py-4 px-6 bg-red-600 hover:bg-red-500 text-black font-extrabold text-lg md:text-xl rounded-lg tracking-widest uppercase transition duration-200 box-glow-red flex items-center justify-center gap-3 cursor-pointer">
+                <i class="fas fa-terminal"></i>
+                <span>ENTRAR DE TODOS MODOS</span>
+            </button>
+        </div>
+
+        <!-- ================= PANTALLA 2: TERMINAL HACKEO SIMULADO ================= -->
+        <div id="screen-hacking" class="hidden w-full max-w-3xl bg-black/95 border border-green-500/80 rounded-lg p-4 md:p-6 box-glow-green transition-all duration-500 flex flex-col h-[75vh]">
+            
+            <!-- Terminal Header Bar -->
+            <div class="flex justify-between items-center border-b border-green-500/40 pb-3 mb-3 text-xs md:text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-red-500 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-yellow-500 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
+                    <span class="ml-2 text-green-400 font-bold">root@hacker-core:~#</span>
+                </div>
+                <div class="text-green-500/60 animate-pulse">
+                    <i class="fas fa-wifi text-xs"></i> EJECUTANDO EXPLOIT...
+                </div>
+            </div>
+
+            <!-- Terminal Output Scroll Area -->
+            <div id="terminal-body" class="flex-grow overflow-y-auto font-mono text-xs md:text-sm space-y-2 pr-2 text-green-400">
+                <!-- Log lines generated via JS -->
+            </div>
+
+            <!-- Hacking Progress Bar Area -->
+            <div class="mt-4 pt-3 border-t border-green-500/30">
+                <div class="flex justify-between text-xs md:text-sm mb-1 font-bold">
+                    <span id="hack-action-label" class="text-green-400">INICIANDO PROTOCOLO...</span>
+                    <span id="hack-percent" class="text-green-300">0%</span>
+                </div>
+                <div class="w-full bg-gray-900 rounded-full h-4 p-0.5 border border-green-500/50">
+                    <div id="hack-bar" class="bg-gradient-to-r from-green-600 to-emerald-400 h-full rounded-full transition-all duration-150 w-0"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= PANTALLA 3: REVELACIÓN DE LA BROMA ================= -->
+        <div id="screen-joke" class="hidden w-full max-w-xl bg-gradient-to-b from-gray-900 to-black border-2 border-emerald-400 rounded-2xl p-6 md:p-10 text-center box-glow-green transition-all duration-700 transform scale-95">
+            
+            <div class="text-6xl md:text-8xl mb-4 animate-bounce">
+                😜
+            </div>
+
+            <h2 class="text-3xl md:text-5xl font-black text-emerald-400 mb-3 tracking-wide glow-green">
+                ¡ES UNA BROMA!
+            </h2>
+
+            <p class="text-lg md:text-2xl text-white font-bold mb-4">
+                No te asustes, tus datos están 100% a salvo.
+            </p>
+
+            <div class="bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-4 mb-6 text-gray-300 text-sm md:text-base space-y-2">
+                <p>✨ <strong>¡Caíste por completo!</strong> ✨</p>
+                <p class="text-xs md:text-sm text-gray-400">
+                    Ningún archivo de tu dispositivo sufrió daños. ¡Ahora es tu turno de enviárselo a un amigo para asustarlo un poco!
+                </p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button id="btn-restart" class="py-3 px-6 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-base md:text-lg rounded-xl transition duration-200 shadow-lg flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-redo"></i>
+                    <span>Volver a jugar</span>
+                </button>
+                <button id="btn-share" class="py-3 px-6 bg-gray-800 hover:bg-gray-700 text-green-400 border border-green-500/50 font-bold text-base md:text-lg rounded-xl transition duration-200 flex items-center justify-center gap-2 cursor-pointer">
+                    <i class="fas fa-copy"></i>
+                    <span id="share-text">Copiar Link de Broma</span>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 w-full p-2 text-center text-xs text-green-500/40 border-t border-green-500/20 bg-black/80">
+        Simulador de Hackeo de Broma • Creado estrictamente para entretenimiento
+    </footer>
+
+    <!-- Audio Effects (Web Audio API Synthesizer) -->
+    <script>
+        // Web Audio API Synthesizer for Retro Beeps
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playBeep(freq = 800, type = 'sine', duration = 0.05, gainValue = 0.05) {
+                if (!this.enabled || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(gainValue, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {
+                    // Audio fail-safe
+                }
+            }
+
+            playSuccess() {
+                if (!this.enabled || !this.ctx) return;
+                const notes = [440, 554, 659, 880];
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => this.playBeep(freq, 'triangle', 0.15, 0.08), idx * 100);
+                });
+            }
+
+            playAlarm() {
+                if (!this.enabled || !this.ctx) return;
+                this.playBeep(300, 'sawtooth', 0.2, 0.1);
+            }
+        }
+
+        const sfx = new SoundFX();
+
+        // Sound Toggle Logic
+        const soundToggleBtn = document.getElementById('sound-toggle');
+        const soundStateText = document.getElementById('sound-state');
+        soundToggleBtn.addEventListener('click', () => {
+            sfx.enabled = !sfx.enabled;
+            soundStateText.innerText = sfx.enabled ? 'ON' : 'OFF';
+            soundToggleBtn.classList.toggle('text-green-400', sfx.enabled);
+            soundToggleBtn.classList.toggle('text-gray-500', !sfx.enabled);
+        });
+
+        // ================= MATRIX RAIN CANVAS =================
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const matrixChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^%';
+        const fontSize = 14;
+        let columns = Math.floor(canvas.width / fontSize);
+        let drops = Array(columns).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff66';
+            ctx.font = fontSize + 'px monospace';
+
+            columns = Math.floor(canvas.width / fontSize);
+            if (drops.length < columns) {
+                const added = columns - drops.length;
+                for (let i = 0; i < added; i++) drops.push(1);
+            }
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 33);
+
+        // ================= APP LOGIC & STATE =================
+        const screenWarning = document.getElementById('screen-warning');
+        const screenHacking = document.getElementById('screen-hacking');
+        const screenJoke = document.getElementById('screen-joke');
+        const terminalBody = document.getElementById('terminal-body');
+        const hackBar = document.getElementById('hack-bar');
+        const hackPercent = document.getElementById('hack-percent');
+        const hackActionLabel = document.getElementById('hack-action-label');
+        const statusTag = document.getElementById('status-tag');
+        const matrixCanvas = document.getElementById('matrix-canvas');
+
+        // Funny terminal logs to display during hack simulation
+        const hackLogs = [
+            { text: "Iniciando protocolo de intrusión súper secreto...", delay: 200 },
+            { text: "Bypassing firewall del enrutador doméstico...", delay: 400 },
+            { text: "Inyectando paquetes de código en la red...", delay: 600 },
+            { text: "[ÉXITO] Acceso concedido al dispositivo local.", delay: 800 },
+            { text: "Escaneando archivos confidenciales...", delay: 1000 },
+            { text: "Accediendo a la cámara frontal... (Sonríe un poco 😁)", delay: 1300 },
+            { text: "Descargando historial de búsquedas vergonzosas...", delay: 1600 },
+            { text: "Analizando nivel de miedo de la víctima...", delay: 2000 },
+            { text: "[ADVERTENCIA] Nivel de susto en aumento (87%)", delay: 2300 },
+            { text: "Descargando fotos de perritos y gatos en secreto...", delay: 2700 },
+            { text: "Calculando probabilidad de que esto sea una broma...", delay: 3100 },
+            { text: "Generando reporte final de 'Hackeo Total'...", delay: 3500 },
+            { text: "Ejecutando comando de revelación final...", delay: 3800 }
+        ];
+
+        // Start Prank Sequence
+        document.getElementById('btn-start').addEventListener('click', () => {
+            sfx.init();
+            sfx.playAlarm();
+
+            // Transition screens
+            screenWarning.classList.add('hidden');
+            screenHacking.classList.remove('hidden');
+            matrixCanvas.style.opacity = '0.35';
+            statusTag.innerText = "HACKEO EN PROCESO";
+            statusTag.className = "text-yellow-400 font-bold tracking-widest uppercase animate-pulse";
+
+            runHackSimulation();
+        });
+
+        // Execute Simulated Terminal Typing & Progress Bar
+        function runHackSimulation() {
+            terminalBody.innerHTML = '';
+            let progress = 0;
+            const totalDuration = 4200; // total ms for the hack
+            const startTime = Date.now();
+
+            // Progress Bar Animation Interval
+            const progressInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                progress = Math.min(Math.floor((elapsed / totalDuration) * 100), 100);
+                
+                hackBar.style.width = `${progress}%`;
+                hackPercent.innerText = `${progress}%`;
+
+                if (progress < 25) {
+                    hackActionLabel.innerText = "INICIANDO PROTOCOLO...";
+                } else if (progress < 50) {
+                    hackActionLabel.innerText = "ACCEDIENDO A ARCHIVOS LOCALE...";
+                } else if (progress < 80) {
+                    hackActionLabel.innerText = "DESCARGANDO FOTOS DE PERRITOS...";
+                } else if (progress < 100) {
+                    hackActionLabel.innerText = "CALCULANDO NIVEL DE MIEDO...";
+                } else {
+                    hackActionLabel.innerText = "¡PROCESO FINALIZADO!";
+                }
+
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    setTimeout(showJokeScreen, 600);
+                }
+            }, 50);
+
+            // Print Console Logs with Delay
+            hackLogs.forEach((log) => {
+                setTimeout(() => {
+                    const logLine = document.createElement('div');
+                    logLine.className = 'flex items-start gap-2 animate-pulse';
+                    logLine.innerHTML = `
+                        <span class="text-green-500 font-bold">></span>
+                        <span>${log.text}</span>
+                    `;
+                    terminalBody.appendChild(logLine);
+                    terminalBody.scrollTop = terminalBody.scrollHeight;
+                    sfx.playBeep(600 + Math.random() * 400, 'sine', 0.03, 0.03);
+                }, log.delay);
+            });
+        }
+
+        // Show Final Joke Screen with Confetti
+        function showJokeScreen() {
+            screenHacking.classList.add('hidden');
+            screenJoke.classList.remove('hidden');
+            screenJoke.classList.remove('scale-95');
+            screenJoke.classList.add('scale-100');
+
+            matrixCanvas.style.opacity = '0.08';
+            statusTag.innerText = "SISTEMA SEGURO";
+            statusTag.className = "text-green-400 font-bold tracking-widest uppercase";
+
+            sfx.playSuccess();
+
+            // Trigger Confetti Celebration
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 120,
+          
